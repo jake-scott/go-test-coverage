@@ -209,6 +209,7 @@ func nonZeroConfig() Config {
 			Paths: []string{"path1", "path2"},
 		},
 		GithubActionOutput: true,
+		WorkingDirectory:   ".",
 	}
 }
 
@@ -227,7 +228,8 @@ exclude:
   paths:
     - path1
     - path2
-github-action-output: true`
+github-action-output: true
+working-directory: "."`
 }
 
 func newValidCfg() Config {

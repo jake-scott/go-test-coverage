@@ -28,6 +28,7 @@ type Config struct {
 	Override           []Override `yaml:"override,omitempty"`
 	Exclude            Exclude    `yaml:"exclude"`
 	GithubActionOutput bool       `yaml:"github-action-output"`
+	WorkingDirectory   string     `yaml:"working-directory"`
 	Badge              Badge      `yaml:"-"`
 }
 

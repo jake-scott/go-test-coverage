@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/alexflint/go-arg"
@@ -25,12 +26,13 @@ const (
 
 type args struct {
 	ConfigPath         string `arg:"-c,--config"`
-	Profile            string `arg:"-p,--profile"              help:"path to coverage profile"`
+	Profile            string `arg:"-p,--profile"              help:"path to coverage profile, relative to working directory"`
 	LocalPrefix        string `arg:"-l,--local-prefix"`
 	GithubActionOutput bool   `arg:"-o,--github-action-output"`
 	ThresholdFile      int    `arg:"-f,--threshold-file"`
 	ThresholdPackage   int    `arg:"-k,--threshold-package"`
 	ThresholdTotal     int    `arg:"-t,--threshold-total"`
+	WorkingDirectory   string `arg:"-w, --working-dir"`
 	BadgeFileName      string `arg:"-b,--badge-file-name"`
 
 	CDNKey            string `arg:"--cdn-key"`
@@ -56,6 +58,7 @@ func newArgs() args {
 		ThresholdFile:      ciDefaultInt,
 		ThresholdPackage:   ciDefaultInt,
 		ThresholdTotal:     ciDefaultInt,
+		WorkingDirectory:   ".",
 
 		// Badge
 		BadgeFileName: ciDefaultString,
@@ -107,6 +110,10 @@ func (a *args) overrideConfig(cfg testcoverage.Config) (testcoverage.Config, err
 		cfg.Threshold.Total = a.ThresholdTotal
 	}
 
+	if a.WorkingDirectory != "." {
+		cfg.WorkingDirectory = a.WorkingDirectory
+	}
+
 	if !isCIDefaultString(a.BadgeFileName) {
 		cfg.Badge.FileName = a.BadgeFileName
 	}
@@ -149,6 +156,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if cfg.WorkingDirectory != "" {
+		if err = os.Chdir(cfg.WorkingDirectory); err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+	}
+
 	pass := testcoverage.Check(os.Stdout, cfg)
 	if !pass {
 		os.Exit(1)
@@ -180,7 +194,10 @@ func readConfig() (testcoverage.Config, error) {
 		return testcoverage.Config{}, fmt.Errorf("config file is not valid: %w", err)
 	}
 
-	return cfg, nil
+	// find the absolute path of the profile so it is readable if we change working directory
+	cfg.Profile, err = filepath.Abs(cfg.Profile)
+
+	return cfg, err
 }
 
 func isCIDefaultString(v string) bool { return v == ciDefaultString }
