@@ -18,7 +18,7 @@ jobs:
 
       - name: set action image version to dev
         run: |
-          yq e -i '.runs.image = "docker://ghcr.io/vladopajic/go-test-coverage:dev"' action.yml
+          yq e -i '.runs.image = "docker://ghcr.io/jake-scott/go-test-coverage:dev"' action.yml
           image=$(yq '.runs.image' action.yml)
           echo "Image: $image"
 
@@ -36,7 +36,7 @@ jobs:
           build-args: |
             VERSION=dev
           tags: |
-            ghcr.io/vladopajic/go-test-coverage:dev
+            ghcr.io/jake-scott/go-test-coverage:dev
 
       - name: generate test coverage
         run: go test ./... -coverprofile=./cover.out -covermode=atomic
@@ -80,7 +80,7 @@ jobs:
         id: test-3
         with:
           profile: cover.out
-          local-prefix: "github.com/vladopajic/go-test-coverage/v2"
+          local-prefix: "github.com/jake-scott/go-test-coverage/v2"
           threshold-file: 0
           threshold-package: 0
           threshold-total: 0
@@ -93,7 +93,7 @@ jobs:
         continue-on-error: true
         with:
           profile: cover.out
-          local-prefix: "github.com/vladopajic/go-test-coverage/v2"
+          local-prefix: "github.com/jake-scott/go-test-coverage/v2"
           threshold-file: 0
           threshold-package: 0
           threshold-total: 100

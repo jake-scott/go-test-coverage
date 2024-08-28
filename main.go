@@ -26,7 +26,7 @@ const (
 
 type args struct {
 	ConfigPath         string `arg:"-c,--config"`
-	Profile            string `arg:"-p,--profile"              help:"path to coverage profile, relative to working directory"`
+	Profile            string `arg:"-p,--profile"              help:"path to coverage profile"`
 	LocalPrefix        string `arg:"-l,--local-prefix"`
 	GithubActionOutput bool   `arg:"-o,--github-action-output"`
 	ThresholdFile      int    `arg:"-f,--threshold-file"`
@@ -190,14 +190,16 @@ func readConfig() (testcoverage.Config, error) {
 	}
 
 	// Validate config
-	if err := cfg.Validate(); err != nil {
+	if err = cfg.Validate(); err != nil {
 		return testcoverage.Config{}, fmt.Errorf("config file is not valid: %w", err)
 	}
 
 	// find the absolute path of the profile so it is readable if we change working directory
-	cfg.Profile, err = filepath.Abs(cfg.Profile)
+	if cfg.Profile, err = filepath.Abs(cfg.Profile); err != nil {
+		return testcoverage.Config{}, fmt.Errorf("finding absolute path of coverage profile: %w", err)
+	}
 
-	return cfg, err
+	return cfg, nil
 }
 
 func isCIDefaultString(v string) bool { return v == ciDefaultString }
